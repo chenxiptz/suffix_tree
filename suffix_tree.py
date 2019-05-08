@@ -34,15 +34,15 @@ class tree_node(object):
         edge_end = max(self.start_idx, self.end_idx-1)
         return self.start_idx, edge_end
 
-
-class tree_suffix(object):
-    def __init__(self, source = 0, start = 0, end = -1):
-        self.source_node = source
-        self.start_char = start
-        self.end_char = end
-
-    def _print(self):
-        print('source node:' + str(self.source_node) + ' start, end: '+str(self.start_char)+' '+str(self.end_char))
+#
+# class tree_suffix(object):
+#     def __init__(self, source = 0, start = 0, end = -1):
+#         self.source_node = source
+#         self.start_char = start
+#         self.end_char = end
+#
+#     def _print(self):
+#         print('source node:' + str(self.source_node) + ' start, end: '+str(self.start_char)+' '+str(self.end_char))
 
         # TODO: canonize - walk down the suffix ???
 
