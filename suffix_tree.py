@@ -165,7 +165,7 @@ class suffix_tree(object):
         i = 0
         node = self.root
         rem_len = len(pattern)
-        t1 = time.time()
+        #t1 = time.time()
         while i < len(pattern):
             next_node = self._find_transition_char(node, pattern[i])
             # no matching outgoing edge
@@ -180,12 +180,12 @@ class suffix_tree(object):
             i += p - k + 1
             node = next_node
         #node._print()
-        t2 = time.time()
-        return node.start_idx - len(pattern) + rem_len, t2-t1
+        #t2 = time.time()
+        return node.start_idx - len(pattern) + rem_len#, t2-t1
 
     def search_all(self, patterns):
         for i in range(len(patterns)):
-            print(self.search(patterns[i]))
+            self.search(patterns[i])
 
 
 def test(length, patternlen):
@@ -267,21 +267,32 @@ def test_correctness():
             print(s, f)
             print("Wrong!"+str(i))
 
-def test_compare(t_len=5000, p_len=5):
+def test_compare(t_len=5000, p_len=10):
     import ahocorasick
+    # tree=ahocorasick.AhoCorasick("test","book","oo","ok")
+    # tree.search("test book")
     keywords = []
-
-    for i in range(5):
-        kwd = gen_seq(p_len)
-        print(kwd)
-        keywords.append(kwd)
     text = gen_seq(t_len)
+    for i in range(5):
+        search_position = random.randint(0, t_len - p_len - 1)
+        search_length = p_len
+        kwd = text[search_position: search_position+search_length]
+        keywords.append(kwd)
+    #print(text)
     t1 = time.time()
-    tree=ahocorasick.AhoCorasick(keywords)
+    a_tree=ahocorasick.AhoCorasick(kwd)
     t2 = time.time()
-    tree.search(text, with_index = True)
+    a_tree.search(text, True)
     t3 = time.time()
-    print(t3-t2, t2-t1)
+    aca_const = t2 - t1
+    aca_search = t3 - t2
+    t1 = time.time()
+    s_tree = suffix_tree(text)
+    t2 = time.time()
+    s_tree.search_all(keywords)
+    t3 = time.time()
+    #print(aca_const, aca_search, t2-t1, t3-t2)
+    return aca_const, aca_search, t2-t1, t3-t2
 
 
 if __name__ == '__main__':
@@ -308,6 +319,45 @@ if __name__ == '__main__':
     elif args.op == 'test_correctness':
         test_correctness()
     elif args.op == 'test_compare':
-        test_compare()
+        t_lens = [50, 100, 500, 1000, 2500, 5000, 7500, 10000]
+        p_lens = [10, 20, 50, 70, 100, 150, 200, 500]
+        times = []
+        for i in range(8):
+            print('text length: '+str(5000)+' pattern length:'+str(p_lens[i]))
+            aca_c, aca_s, suf_c, suf_s = test_compare(5000, p_lens[i])
+            times.append([aca_c, aca_s, suf_c, suf_s])
+        t1 = [row[1] for row in times]
+        t2 = [row[3] for row in times]
+        plt.plot(p_lens, t1, 'ro', label = 'aca')
+        plt.plot(p_lens, t2, 'bo', label = 'suffix')
+        plt.legend()
+        plt.savefig('search_time_comp_var_p.png')
+        plt.clf()
+        t1 = [row[0] for row in times]
+        t2 = [row[2] for row in times]
+        plt.plot(p_lens, t1, 'ro', label = 'aca')
+        plt.plot(p_lens, t2, 'bo', label = 'suffix')
+        plt.legend()
+        plt.savefig('const_time_comp_var_p.png')
+        plt.clf()
+        times = []
+        for i in range(8):
+            print('text length: '+str(t_lens[i])+' pattern length:'+str(p_lens[1]))
+            aca_c, aca_s, suf_c, suf_s = test_compare(t_lens[i], 10)
+            times.append([aca_c, aca_s, suf_c, suf_s])
+        t1 = [row[0] for row in times]
+        t2 = [row[2] for row in times]
+        plt.plot(t_lens, t1, 'ro', label = 'aca')
+        plt.plot(t_lens, t2, 'bo', label = 'suffix')
+        plt.legend()
+        plt.savefig('const_time_comp_var_t.png')
+        plt.clf()
+        t1 = [row[1] for row in times]
+        t2 = [row[3] for row in times]
+        plt.plot(t_lens, t1, 'ro', label = 'aca')
+        plt.plot(t_lens, t2, 'bo', label = 'suffix')
+        plt.legend()
+        plt.savefig('search_time_comp_var_t.png')
+        plt.clf()
     else:
         print('Yo what do you want')
