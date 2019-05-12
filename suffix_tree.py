@@ -165,28 +165,36 @@ class suffix_tree(object):
         i = 0
         node = self.root
         rem_len = len(pattern)
-        #t1 = time.time()
+        t1 = time.time()
         while i < len(pattern):
             next_node = self._find_transition_char(node, pattern[i])
             # no matching outgoing edge
             #next_node._print()
             if next_node == None:
-                return -1
+                t2 = time.time()
+                return -1, t2-t1
             k, p = next_node._ref_pair()
             rem_len = min(p - k+1, len(pattern) - i)
             # doesn't match edge label
             if pattern[i:i+rem_len] != self.text[k:k+rem_len]:
-                return -1
+                t2 = time.time()
+                return -1, t2-t1
             i += p - k + 1
             node = next_node
         #node._print()
-        #t2 = time.time()
-        return node.start_idx - len(pattern) + rem_len#, t2-t1
+        t2 = time.time()
+        return node.start_idx - len(pattern) + rem_len, t2-t1
 
     def search_all(self, patterns):
         for i in range(len(patterns)):
-            self.search(patterns[i])
+            print(self.search(patterns[i]))
 
+def parse_fasta(fname):
+    contents = []
+    with open(fname, "r") as fh:
+        for line in fh:
+            contents.append(line)
+    return contents
 
 def test(length, patternlen):
     input_text = gen_seq(length)
@@ -299,6 +307,8 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("op")
+    parser.add_argument("--fpath")
+    parser.add_argument("--pattern")
     args = parser.parse_args()
 
     if args.op == 'test_mem':
@@ -359,5 +369,13 @@ if __name__ == '__main__':
         plt.legend()
         plt.savefig('search_time_comp_var_t.png')
         plt.clf()
+    elif args.op == 'search_file':
+        fname = args.fpath
+        pattern = args.pattern
+        text = parse_fasta(fname)[1].rstrip()
+        print(text)
+        t = suffix_tree(text)
+        print(t.search(pattern))
+
     else:
         print('Yo what do you want')
